@@ -6,14 +6,14 @@ nodeSelector: app=3scale
 wildcardDomain: apps.bcordeir.apps.ocpv.tamlab.rdu2.redhat.com
 
 # componentes que serão externalizados
-externalComponents:
-  backend:
-    redis: false
-  system:
-    database: true
-    redis: false
-  zync:
-    database: false
+# externalComponents:
+#   backend:
+#     redis: true
+#   system:
+#     database: true
+#     redis: true
+#   zync:
+#     database: true
 
 # definições do componente apicast-production e staging
 apicast:
@@ -46,6 +46,10 @@ backend:
 
 # definições do componente system
 system:
+  fileStorage:
+    simpleStorageService:
+        configurationSecretRef:    
+          name: minio-auth
   redisResources:
     requests: 
       cpu: 1000m
