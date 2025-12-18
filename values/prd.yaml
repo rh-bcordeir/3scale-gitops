@@ -1,0 +1,110 @@
+name: 3scale
+namespace: 3scale
+nodeSelector: app=3scale
+
+# domain a ser usado
+wildcardDomain: apps.bcordeir.apps.ocpv.tamlab.rdu2.redhat.com
+    
+# componentes que serão externalizados
+externalComponents:
+  backend:
+    redis: false
+  system:
+    database: true
+    redis: false
+  zync:
+    database: false
+    
+# definições dos apicasts
+apicast:
+  productionSpec:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 2000m
+        memory: 2048Mi
+    affinity:
+      podAntiAffinity:  # vai ser aplicado apenas nos componentes com replica 2, para evitar que sejam schedulados no mesmo node. Necessário checar a label correta para cada componente.
+        preferredDuringSchedulingIgnoredDuringExecution: 
+        - weight: 100  
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: deploymentConfig 
+                operator: In 
+                values:
+                - apicast-production
+            topologyKey: kubernetes.io/hostname
+  stagingSpec:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    affinity:
+      podAntiAffinity:  # vai ser aplicado apenas nos componentes com replica 2, para evitar que sejam schedulados no mesmo node. Necessário checar a label correta para cada componente.
+        preferredDuringSchedulingIgnoredDuringExecution: 
+        - weight: 100  
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: deploymentConfig 
+                operator: In 
+                values:
+                - apicast-staging
+            topologyKey: kubernetes.io/hostname
+
+# definições do componente backend
+backend:
+  redisResources:
+    requests: 
+      cpu: 1000m
+      memory: 1024Mi
+    limits: 
+      cpu: 2000m
+      memory: 8192Mi
+  listenerSpec:
+    replicas: 2
+    affinity:
+      podAntiAffinity:  # vai ser aplicado apenas nos componentes com replica 2, para evitar que sejam schedulados no mesmo node. Necessário checar a label correta para cada componente.
+        preferredDuringSchedulingIgnoredDuringExecution: 
+        - weight: 100  
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: deploymentConfig 
+                operator: In 
+                values:
+                - backend-listener
+            topologyKey: kubernetes.io/hostname
+  workerSpec:
+    replicas: 2
+    affinity:
+      podAntiAffinity:  # vai ser aplicado apenas nos componentes com replica 2, para evitar que sejam schedulados no mesmo node. Necessário checar a label correta para cada componente.
+        preferredDuringSchedulingIgnoredDuringExecution: 
+        - weight: 100  
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: deploymentConfig 
+                operator: In 
+                values:
+                - backend-worker
+            topologyKey: kubernetes.io/hostname
+
+    
+# definições do componente system
+system:
+  redisResources:
+    requests: 
+      cpu: 1000m
+      memory: 1024Mi
+    limits:
+      cpu: 2000m
+      memory: 8192Mi    

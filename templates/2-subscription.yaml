@@ -1,0 +1,19 @@
+{{- if .Values.deployOperator }}
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: {{ .Values.name }}-subscription
+  namespace: {{ .Values.namespace | default .Values.name | quote }}
+  labels:
+    {{- include "threescale.labels" . | nindent 4 }}
+    {{- include "threescale.operatorLabel" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  name: 3scale-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+  channel: {{ .Values.operator.channel }}
+  installPlanApproval: {{ .Values.operator.installPlanApproval }}
+  startingCSV: {{ .Values.operator.startingCSV }}
+{{- end}}

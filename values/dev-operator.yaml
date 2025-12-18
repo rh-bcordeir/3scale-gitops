@@ -1,0 +1,9 @@
+name: 3scale
+namespace: 3scale-dev
+
+deployOperator: true
+operator:
+  channel: threescale-2.15
+  # versão 0.12.5 será utilizada no cluster de DEV para validar atualização
+  startingCSV: 3scale-operator.v0.12.5
+  installPlanApproval: Manual

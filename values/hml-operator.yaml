@@ -1,0 +1,8 @@
+name: 3scale
+namespace: 3scale-hml
+
+deployOperator: true
+operator:
+  channel: threescale-2.15
+  startingCSV: 3scale-operator.v0.12.5
+  installPlanApproval: Manual

@@ -1,0 +1,55 @@
+name: 3scale
+namespace: 3scale-hml
+nodeSelector: app=3scale
+
+# domain a ser usado
+wildcardDomain: apps.bcordeir.apps.ocpv.tamlab.rdu2.redhat.com
+
+# componentes que serão externalizados
+externalComponents:
+  backend:
+    redis: false
+  system:
+    database: true
+    redis: false
+  zync:
+    database: false
+
+# definições do componente apicast-production e staging
+apicast:
+  productionSpec:
+    resources:
+      requests:
+        cpu: 125m
+        memory: 256Mi
+      limits:
+        cpu: 250m
+        memory: 512Mi
+  stagingSpec:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+
+# definições do componente backend
+backend:
+  redisResources:
+    requests: 
+      cpu: 1000m
+      memory: 1024Mi
+    limits: 
+      cpu: 2000m
+      memory: 8192Mi
+
+# definições do componente system
+system:
+  redisResources:
+    requests: 
+      cpu: 1000m
+      memory: 1024Mi
+    limits:
+      cpu: 2000m
+      memory: 8192Mi

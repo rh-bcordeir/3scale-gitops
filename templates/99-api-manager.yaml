@@ -1,0 +1,40 @@
+{{- if not .Values.deployOperator }}
+apiVersion: apps.3scale.net/v1alpha1
+kind: APIManager
+metadata:
+  name: {{ required "A name must be defined" .Values.name | quote }}
+  namespace: {{ .Values.namespace | default .Values.name | quote }}
+  labels:
+    {{- include "threescale.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "99"
+    apps.3scale.net/apimanager-threescale-version: 2.15.5
+    apps.3scale.net/threescale-operator-version: 0.12.5
+spec:
+  wildcardDomain: {{ .Values.wildcardDomain }}
+  {{- if .Values.apicast }}
+  apicast:
+    {{- toYaml .Values.apicast | nindent 4 }}
+  {{- end }}
+
+  {{- if .Values.backend }}
+  backend:
+    {{- toYaml .Values.backend | nindent 4 }}
+  {{- end }}
+
+  {{- if .Values.system }}
+  system:
+    {{- toYaml .Values.system | nindent 4 }}
+  {{- end }}
+
+  {{- if .Values.zync }}
+  zync:
+    {{- toYaml .Values.zync | nindent 4 }}
+  {{- end }}
+  
+  {{- if .Values.externalComponents }}
+  externalComponents:
+    {{- toYaml .Values.externalComponents | nindent 4 }}
+  {{- end }}
+
+{{- end }}

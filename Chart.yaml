@@ -1,0 +1,6 @@
+apiVersion: v2
+name: threescale
+description: A Helm chart for deploy Red Hat 3scale API Management through it Operator
+type: application
+version: 2.15
+appVersion: "2.15"
