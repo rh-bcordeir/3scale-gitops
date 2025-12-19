@@ -1,3 +1,11 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: system-redis
+  namespace: {{ .Values.namespace | default .Values.name | quote }}
+  labels:
+    app: system-redis
+---
 kind: Deployment
 apiVersion: apps/v1
 metadata:
