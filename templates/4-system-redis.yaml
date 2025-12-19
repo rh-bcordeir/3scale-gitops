@@ -102,6 +102,22 @@ spec:
       storage: 1Gi
   volumeMode: Filesystem
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: system-redis-service
+  namespace: {{ .Values.namespace | default .Values.name | quote }}
+  labels:
+    app: system-redis
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6379
+    targetPort: 6379
+    protocol: TCP
+  selector:
+    deployment: system-redis
+---
 kind: ConfigMap
 apiVersion: v1
 metadata:
