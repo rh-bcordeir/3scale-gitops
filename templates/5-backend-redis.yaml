@@ -2,6 +2,7 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: backend-redis
+  namespace: {{ .Values.namespace | default .Values.name | quote }}
   labels:
     app: backend-redis
 spec:
@@ -90,6 +91,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: backend-redis-storage
+  namespace: {{ .Values.namespace | default .Values.name | quote }}
   labels:
     app: backend-redis
 spec:
@@ -104,6 +106,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: backend-redis-service
+  namespace: {{ .Values.namespace | default .Values.name | quote }}
   labels:
     app: backend-redis
 spec:
