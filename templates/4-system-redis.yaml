@@ -1,0 +1,80 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: system-redis
+  namespace: {{ .Values.namespace | default .Values.name | quote }}
+  labels:
+    app: system-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: system-redis
+  template:
+    metadata:
+      labels:
+        deployment: system-redis
+    spec:
+      restartPolicy: Always
+      serviceAccountName: system-redis
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      securityContext: {}
+      containers:
+        - resources:
+            limits:
+              cpu: '2'
+              memory: 32Gi
+            requests:
+              cpu: '1'
+              memory: 1Gi
+          readinessProbe:
+            exec:
+              command:
+                - container-entrypoint
+                - bash
+                - '-c'
+                - redis-cli set liveness-probe "`date`" | grep OK
+            initialDelaySeconds: 10
+            timeoutSeconds: 1
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3
+          terminationMessagePath: /dev/termination-log
+          name: system-redis
+          livenessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 10
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          env:
+            - name: REDIS_CONF
+              value: /etc/redis.d/redis.conf
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: system-redis-storage
+              mountPath: /var/lib/redis/data
+            - name: redis-config
+              mountPath: /etc/redis.d/
+          terminationMessagePolicy: File
+          image: 'registry.redhat.io/rhel9/redis-7'
+      serviceAccount: system-redis
+      volumes:
+        - name: system-redis-storage
+          persistentVolumeClaim:
+            claimName: system-redis-storage
+        - name: redis-config
+          configMap:
+            name: redis-config
+            items:
+              - key: redis.conf
+                path: redis.conf
+            defaultMode: 420
+      dnsPolicy: ClusterFirst
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
