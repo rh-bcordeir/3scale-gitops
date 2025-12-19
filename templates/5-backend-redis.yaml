@@ -1,0 +1,116 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: backend-redis
+  labels:
+    app: backend-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: backend-redis
+  template:
+    metadata:
+      labels:
+        deployment: backend-redis
+    spec:
+      restartPolicy: Always
+      serviceAccountName: backend-redis
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      securityContext: {}
+      containers:
+        - resources:
+            limits:
+              cpu: '2'
+              memory: 32Gi
+            requests:
+              cpu: '1'
+              memory: 1Gi
+          readinessProbe:
+            exec:
+              command:
+                - container-entrypoint
+                - bash
+                - '-c'
+                - redis-cli set liveness-probe "`date`" | grep OK
+            initialDelaySeconds: 10
+            timeoutSeconds: 1
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3
+          terminationMessagePath: /dev/termination-log
+          name: backend-redis
+          livenessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 10
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          env:
+            - name: REDIS_CONF
+              value: /etc/redis.d/redis.conf
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: backend-redis-storage
+              mountPath: /var/lib/redis/data
+            - name: redis-config
+              mountPath: /etc/redis.d/
+          terminationMessagePolicy: File
+          image: 'registry.redhat.io/rhel9/redis-7'
+      serviceAccount: backend-redis
+      volumes:
+        - name: backend-redis-storage
+          persistentVolumeClaim:
+            claimName: backend-redis-storage
+        - name: redis-config
+          configMap:
+            name: redis-config
+            items:
+              - key: redis.conf
+                path: redis.conf
+            defaultMode: 420
+      dnsPolicy: ClusterFirst
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backend-redis
+  namespace: {{ .Values.namespace | default .Values.name | quote }}
+  labels:
+    app: backend-redis
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backend-redis-storage
+  labels:
+    app: backend-redis
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeMode: Filesystem
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-redis-service
+  labels:
+    app: backend-redis
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6379
+    targetPort: 6379
+    protocol: TCP
+  selector:
+    deployment: backend-redis
