@@ -10,7 +10,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "99"
     apps.3scale.net/apimanager-threescale-version: 2.15.5
     apps.3scale.net/threescale-operator-version: 0.12.5
-    apps.3scale.net/apimanager-confirmed-requirements-version: 2465008
+    apps.3scale.net/apimanager-confirmed-requirements-version: '2465008'
 spec:
   wildcardDomain: {{ .Values.wildcardDomain }}
   {{- if .Values.apicast }}
